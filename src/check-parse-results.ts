@@ -20,12 +20,22 @@ export default async function main(includeNpmChecks: boolean, options: Options):
 	checkForDuplicates(packages, pkg => pkg.libraryName, "Library Name", log);
 	checkForDuplicates(packages, pkg => pkg.projectName, "Project Name", log);
 
+	const dependedOn = new Set<string>();
+	for (const pkg of packages) {
+		if (pkg instanceof TypingsData) {
+			for (const dep of pkg.dependencies)
+				dependedOn.add(dep.name);
+			for (const dep of pkg.testDependencies)
+				dependedOn.add(dep);
+		}
+	}
+
 	if (includeNpmChecks) {
-		await nAtATime(10, allPackages.allTypings(), pkg => checkNpm(pkg, log), {
+		await nAtATime(10, allPackages.allTypings(), pkg => checkNpm(pkg, log, dependedOn)/*, {
 			name: "Checking for typed packages...",
 			flavor: pkg => pkg.desc,
 			options
-		});
+		}*/);
 	}
 
 	await writeLog("conflicts.md", logResult());
@@ -75,11 +85,31 @@ function checkPathMappings(allPackages: AllPackages) {
 	}
 }
 
-async function checkNpm(pkg: TypingsData, log: Logger): Promise<void> {
+async function checkNpm(pkg: TypingsData, log: Logger, dependedOn: Set<string>): Promise<void> {
 	const asOfVersion = await firstPackageVersionWithTypes(pkg.name);
 	if (asOfVersion) {
 		const ourVersion = `${pkg.major}.${pkg.minor}`;
+		log(``);
 		log(`Typings already defined for ${pkg.name} (${pkg.libraryName}) as of ${asOfVersion} (our version: ${ourVersion})`);
+		const contributorUrls = pkg.contributors.map(c => {
+			const gh = "https://github.com/";
+			if (c.url.startsWith(gh)) {
+				return "@" + c.url.slice(gh.length);
+			} else {
+				return `${c.name} (${c.url})`;
+			}
+		});
+		log(`git checkout -b not-needed-${pkg.name}`);
+		log(`npm run not-needed -- ${pkg.name} ${asOfVersion} ${pkg.projectName} ${pkg.libraryName !== pkg.name ? pkg.libraryName : ""}`);
+		log(`${pkg.name}: Provides its own types`);
+		log(`git push -u origin not-needed-xmpp-jid`);
+		log(`This will deprecate \`@types/${pkg.name}\` in favor of just \`${pkg.name}\`. CC ${contributorUrls}`);
+		if (ourVersion >= asOfVersion) {
+			log(`WARNING: our version is greater!`);
+		}
+		if (dependedOn.has(pkg.name)) {
+			log(`WARNING: other packages depend on this`);
+		}
 	}
 }
 
