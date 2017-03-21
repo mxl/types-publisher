@@ -99,15 +99,16 @@ async function checkNpm(pkg: TypingsData, log: Logger, dependedOn: Set<string>):
 				return `${c.name} (${c.url})`;
 			}
 		});
-		log(`git checkout -b not-needed-${pkg.name}`);
-		log(`npm run not-needed -- ${pkg.name} ${asOfVersion} ${pkg.projectName} ${pkg.libraryName !== pkg.name ? pkg.libraryName : ""}`);
-		log(`${pkg.name}: Provides its own types`);
-		log(`git push -u origin not-needed-xmpp-jid`);
-		log(`This will deprecate \`@types/${pkg.name}\` in favor of just \`${pkg.name}\`. CC ${contributorUrls}`);
+		const { name, libraryName, projectName } = pkg;
+		log(`git checkout -b not-needed-${name}`);
+		log(`npm run not-needed -- ${name} ${asOfVersion} ${projectName} ${libraryName !== name ? libraryName : ""}`);
+		log(`${name}: Provides its own types`);
+		log(`git push -u origin not-needed-${name}`);
+		log(`This will deprecate \`@types/${name}\` in favor of just \`${name}\`. CC ${contributorUrls}`);
 		if (ourVersion >= asOfVersion) {
 			log(`WARNING: our version is greater!`);
 		}
-		if (dependedOn.has(pkg.name)) {
+		if (dependedOn.has(name)) {
 			log(`WARNING: other packages depend on this`);
 		}
 	}
