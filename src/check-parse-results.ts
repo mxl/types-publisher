@@ -98,11 +98,11 @@ async function checkNpm(pkg: TypingsData, log: Logger, dependedOn: Set<string>):
 			} else {
 				return `${c.name} (${c.url})`;
 			}
-		});
+		}).join(", ");
 		const { name, libraryName, projectName } = pkg;
 		log(`git checkout -b not-needed-${name}`);
-		log(`npm run not-needed -- ${name} ${asOfVersion} ${projectName} ${libraryName !== name ? libraryName : ""}`);
-		log(`${name}: Provides its own types`);
+		log(`yarn not-needed -- ${name} ${asOfVersion} ${projectName} ${libraryName !== name ? libraryName : ""}`);
+		log(`git add --all && git commit -m "${name}: Provides its own types"`);
 		log(`git push -u origin not-needed-${name}`);
 		log(`This will deprecate \`@types/${name}\` in favor of just \`${name}\`. CC ${contributorUrls}`);
 		if (ourVersion >= asOfVersion) {
