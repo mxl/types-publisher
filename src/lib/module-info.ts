@@ -387,7 +387,7 @@ export async function getTestDependencies(pkgName: string, directory: string, te
 		}
 
 		for (const imported of imports(sourceFile)) {
-			if (!imported.startsWith(".") && !dependencies.has(imported)) {
+			if (!imported.startsWith(".") && imported !== pkgName && !dependencies.has(imported)) {
 				testDependencies.add(imported);
 			}
 		}
