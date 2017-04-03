@@ -115,7 +115,9 @@ async function checkNpm(pkg: TypingsData, log: Logger, dependedOn: Set<string>):
 }
 
 export async function packageHasTypes(packageName: string): Promise<boolean> {
-	return (await firstPackageVersionWithTypes(packageName)) !== undefined;
+	// Someone published a `express-serve-static-core` package based on DefinitelyTyped. It's not a real package.
+	return packageName !== "express-serve-static-core" &&
+		(await firstPackageVersionWithTypes(packageName)) !== undefined;
 }
 
 async function firstPackageVersionWithTypes(packageName: string): Promise<string | undefined> {
