@@ -102,7 +102,7 @@ async function getTypingData(packageName: string, directory: string, ls: string[
 		checkPackageJson(await readJson(packageJsonPath), packageJsonPath);
 	}
 
-	const allContentHashFiles = hasPackageJson ? declFiles.concat(["package.json"]) : declFiles;
+	const allContentHashFiles = hasPackageJson ? declFiles.concat(["package.json", "package-lock.json"]) : declFiles;
 
 	const allFiles = new Set(allContentHashFiles.concat(testFiles, ["tsconfig.json", "tslint.json"]));
 	await checkAllFilesUsed(directory, ls, allFiles);
